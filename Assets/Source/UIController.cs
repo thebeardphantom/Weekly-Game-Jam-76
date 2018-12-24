@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using DG.Tweening;
+﻿using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -9,16 +8,23 @@ public class UIController : MonoBehaviour
     #region Fields
 
     [SerializeField]
-    private TextMeshProUGUI _hintText;
+    private UIButton _infoButton;
 
     [SerializeField]
-    private RectTransform _hintBox;
+    [Header("Info Popup")]
+    [FormerlySerializedAs("_hintText")]
+    private TextMeshProUGUI _infoPopupText;
 
-    [FormerlySerializedAs("_canvasGroup")]
     [SerializeField]
-    private CanvasGroup _hintBoxCanvasGroup;
+    [FormerlySerializedAs("_hintBox")]
+    private RectTransform _infoPopup;
 
-    private float _hintBoxShowY;
+    [SerializeField]
+    private UIButton _infoPopupCloseButton;
+
+    [SerializeField]
+    [FormerlySerializedAs("_hintBoxCanvasGroup")]
+    private CanvasGroup _infoPopupCanvasGroup;
 
     #endregion
 
@@ -30,39 +36,28 @@ public class UIController : MonoBehaviour
 
     #region Methods
 
-    public void PublishHintText(string hint)
-    {
-        if(_hintText.text != hint || !DOTween.IsTweening(_hintBox) && _hintBox.anchoredPosition.y < 0f)
-        {
-            ResetHintBox();
-            _hintBoxCanvasGroup.DOFade(1f, 0.5f);
-            _hintBox.DOAnchorPosY(_hintBoxShowY, 0.5f).SetEase(Ease.OutBack);
-            _hintText.text = hint;
-            StartCoroutine(FadeOutHintBox());
-        }
-    }
-
-    private IEnumerator FadeOutHintBox()
-    {
-        yield return new WaitForSeconds(5f);
-        _hintBox.DOAnchorPosY(-100f, 2f);
-        _hintBoxCanvasGroup.DOFade(0f, 2f);
-    }
-
     private void Awake()
     {
-        _hintBoxShowY = _hintBox.anchoredPosition.y;
-        ResetHintBox();
+        _infoButton.onClick.AddListener(OnInfoButtonClick);
+        _infoPopupCloseButton.onClick.AddListener(OnInfoPopupCloseButtonClick);
+        _infoPopupCanvasGroup.alpha = 0f;
+        _infoPopupCanvasGroup.blocksRaycasts = false;
         Instance = this;
     }
 
-    private void ResetHintBox()
+    private void OnInfoPopupCloseButtonClick()
     {
-        StopAllCoroutines();
-        _hintBox.DOKill();
-        _hintBoxCanvasGroup.DOKill();
-        _hintBox.anchoredPosition = new Vector2(0f, -100f);
-        _hintBoxCanvasGroup.alpha = 0f;
+        _infoPopupCanvasGroup.DOFade(0f, 0.5f);
+        _infoPopupCanvasGroup.blocksRaycasts = false;
+    }
+
+    private void OnInfoButtonClick()
+    {
+        _infoPopupCanvasGroup.DOFade(1f, 0.5f);
+        _infoPopupCanvasGroup.blocksRaycasts = true;
+        var helpText = GameController.Instance.ActiveAgent.AgentData.HelpText;
+        helpText = TextFormatter.Format(helpText);
+        _infoPopupText.text = helpText;
     }
 
     #endregion

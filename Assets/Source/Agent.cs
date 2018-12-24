@@ -1,28 +1,40 @@
-﻿using UnityEngine;
+﻿using TMPro;
+using UnityEngine;
 
 public abstract class Agent : MonoBehaviour
 {
     #region Fields
 
-    [Header("Camera")]
+    [SerializeField]
+    private TextMeshPro _ascensionLabel;
+
     [SerializeField]
     private Transform _cameraTrackTarget;
 
     [SerializeField]
-    private float _orthoSize;
+    private AgentData _data;
+
+    private string _ascensionFormatString;
 
     #endregion
 
     #region Properties
 
+    public bool IsPlayer => GameController.Instance.ActiveAgent == this;
+
     public Transform CameraTrackTarget => _cameraTrackTarget;
 
-    public float OrthoSize => _orthoSize;
+    public AgentData AgentData => _data;
 
     #endregion
 
-    public void RegisterIncorrectAction(string msg)
+    #region Methods
+
+    protected virtual void Awake()
     {
-        UIController.Instance.PublishHintText(msg);
+        _ascensionFormatString = _ascensionLabel.text;
+        _ascensionLabel.text = string.Format(_ascensionFormatString, _data.AscensionLevel);
     }
+
+    #endregion
 }

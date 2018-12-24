@@ -5,9 +5,6 @@ public class GameCamera : MonoBehaviour
     #region Fields
 
     [SerializeField]
-    private Agent _trackedAgent;
-
-    [SerializeField]
     private float _positionLerpTime;
 
     [SerializeField]
@@ -23,29 +20,29 @@ public class GameCamera : MonoBehaviour
 
     #region Methods
 
-    private void Awake()
+    private void Start()
     {
         _camera = GetComponent<Camera>();
-        if (_trackedAgent != null && _trackedAgent.CameraTrackTarget != null)
+        var trackedAgent = GameController.Instance.ActiveAgent;
+        if (trackedAgent != null && trackedAgent.CameraTrackTarget != null)
         {
-            var target = _trackedAgent.CameraTrackTarget.position;
+            var target = trackedAgent.CameraTrackTarget.position;
             target.z = transform.position.z;
             transform.position = target;
-            _camera.orthographicSize = _trackedAgent.OrthoSize;
+            _camera.orthographicSize = trackedAgent.AgentData.OrthoSize;
         }
     }
 
     private void LateUpdate()
     {
-        if (_trackedAgent == null || _trackedAgent.CameraTrackTarget == null)
+        var trackedAgent = GameController.Instance.ActiveAgent;
+        if (trackedAgent != null && trackedAgent.CameraTrackTarget != null)
         {
-            return;
+            var target = trackedAgent.CameraTrackTarget.position;
+            target.z = transform.position.z;
+            transform.position = Vector3.SmoothDamp(transform.position, target, ref _positionVelocity, _positionLerpTime);
+            _camera.orthographicSize = Mathf.SmoothDamp(_camera.orthographicSize, trackedAgent.AgentData.OrthoSize, ref _zoomVelocity, _zoomLerpTime);
         }
-
-        var target = _trackedAgent.CameraTrackTarget.position;
-        target.z = transform.position.z;
-        transform.position = Vector3.SmoothDamp(transform.position, target, ref _positionVelocity, _positionLerpTime);
-        _camera.orthographicSize = Mathf.SmoothDamp(_camera.orthographicSize, _trackedAgent.OrthoSize, ref _zoomVelocity, _zoomLerpTime);
     }
 
     #endregion

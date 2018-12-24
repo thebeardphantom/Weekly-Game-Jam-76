@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class WormAgent : Agent
 {
+    #region Fields
+
     [SerializeField]
     private SpriteRenderer _headSegment;
 
@@ -19,7 +21,7 @@ public class WormAgent : Agent
     private float _moveSpeed;
 
     [SerializeField]
-    private float _maxYPosition;
+    private ParticleSystem _digParticles;
 
     private SpriteRenderer[] _segments;
 
@@ -27,10 +29,52 @@ public class WormAgent : Agent
 
     private Vector2 _lastDir;
 
-    private int _errCount;
+    private float _nextUpdate;
 
-    private void Awake()
+    private Vector2 _segmentExtents;
+
+    private float _updateSpeed;
+
+    #endregion
+
+    #region Properties
+
+    private Vector2 HeadBottomCenter => transform.position + Vector3.down * _segmentExtents.y;
+
+    #endregion
+
+    #region Methods
+
+    private static bool Approx(Vector3 a, Vector3 b)
     {
+        return Mathf.Approximately(a.x, b.x) && Mathf.Approximately(a.y, b.y) && Mathf.Approximately(a.z, b.z);
+    }
+
+    private static Vector2 CalcExtents(Vector2[] spriteVertices)
+    {
+        var min = spriteVertices[0];
+        var max = spriteVertices[0];
+        foreach (var vert in spriteVertices)
+        {
+            min = Vector2.Min(min, vert);
+            max = Vector2.Max(max, vert);
+        }
+
+        return new Vector2(max.x - min.x, max.y - min.y) / 2f;
+    }
+
+    protected override void Awake()
+    {
+        base.Awake();
+
+        _updateSpeed = Random.Range(0.05f, 0.1f);
+
+        var position = transform.position;
+        var roundFactor = 1f / _moveSpeed;
+        position.x = Mathf.Round(position.x * roundFactor) / roundFactor;
+        position.y = Mathf.Round(position.y * roundFactor) / roundFactor;
+        transform.position = position;
+
         _segments = new SpriteRenderer[_segmentCount];
         _segments[0] = _headSegment;
         _lastPositions = new Vector3[_segmentCount];
@@ -43,72 +87,86 @@ public class WormAgent : Agent
             _segments[i].transform.position = transform.position + Vector3.right * _offset * i;
             _lastPositions[i] = _segments[i].transform.position;
         }
+
+        _segmentExtents = CalcExtents(_segments[0].sprite.vertices);
     }
 
     private void Update()
     {
         var direction = Vector2.zero;
-        if (KeyDown(KeyCode.W, KeyCode.UpArrow))
+        if (IsPlayer)
         {
-            direction.y += 1f;
+            if (InputManager.Instance.AnyDown("MOVE_UP"))
+            {
+                direction.y = 1f;
+            }
+            else if (InputManager.Instance.AnyDown("MOVE_DOWN"))
+            {
+                direction.y = -1f;
+            }
+            else if (InputManager.Instance.AnyDown("MOVE_RIGHT"))
+            {
+                direction.x = 1f;
+            }
+            else if (InputManager.Instance.AnyDown("MOVE_LEFT"))
+            {
+                direction.x = -1f;
+            }
         }
-        else if (KeyDown(KeyCode.S, KeyCode.DownArrow))
+        else if (Time.time >= _nextUpdate)
         {
-            direction.y += -1f;
+            if (Mathf.Abs(_lastDir.x) > 0f || Mathf.Approximately(_lastDir.sqrMagnitude, 0f))
+            {
+                direction.y = Random.value > Random.value
+                    ? 1f
+                    : -1f;
+            }
+            else if (Mathf.Abs(_lastDir.y) > 0f)
+            {
+                direction.x = Random.value > Random.value
+                    ? 1f
+                    : -1f;
+            }
+
+            _nextUpdate = Time.time + _updateSpeed;
         }
-        else if (KeyDown(KeyCode.D, KeyCode.RightArrow))
-        {
-            direction.x += 1f;
-        }
-        else if (KeyDown(KeyCode.A, KeyCode.LeftArrow))
-        {
-            direction.x += -1f;
-        }
+
+        MoveInDirection(direction);
+    }
+
+    private void MoveInDirection(Vector2 direction)
+    {
         if (direction.sqrMagnitude > 0f)
         {
-            if (transform.position.y >= _maxYPosition && direction.y > 0f)
+            var isAtMaxHeight = transform.position.y >= 0f;
+            if (isAtMaxHeight && direction.y > 0f)
             {
-                _errCount++;
-                if (_errCount > 3)
-                {
-                    _errCount = 0;
-                    RegisterIncorrectAction("You're a worm, not a bird!");
-                }
                 return;
             }
 
-            var newPosition = transform.position + (Vector3)direction * _moveSpeed;
+            var newPosition = transform.position + (Vector3) direction * _moveSpeed;
             if (_segments.Any(p => Approx(newPosition, p.transform.position)))
             {
-                _errCount++;
-                if (_errCount > 3)
-                {
-                    _errCount = 0;
-                    RegisterIncorrectAction("You can't move through yourself!");
-                }
                 return;
             }
 
-            if (_lastDir.sqrMagnitude > 0f
-                && (Mathf.Approximately(Mathf.Abs(_lastDir.x), Mathf.Abs(direction.x))
-                    || Mathf.Approximately(Mathf.Abs(_lastDir.y), Mathf.Abs(direction.y))))
+            var sameDirX = Mathf.Approximately(Mathf.Abs(_lastDir.x), Mathf.Abs(direction.x));
+            var sameDirY = Mathf.Approximately(Mathf.Abs(_lastDir.y), Mathf.Abs(direction.y));
+            if (_lastDir.sqrMagnitude > 0f && (sameDirX || sameDirY) && !(sameDirX && isAtMaxHeight))
             {
-                _errCount++;
-                if(_errCount > 3)
-                {
-                    _errCount = 0;
-                    RegisterIncorrectAction("Wiggle like a worm: move one axis at a time!");
-                }
                 return;
             }
 
-            _errCount = 0;
+            var digEmission = _digParticles.emission;
+            digEmission.enabled = newPosition.y < 0f;
+
             _lastDir = direction;
             transform.position = newPosition;
             for (var i = 1; i < _lastPositions.Length; i++)
             {
                 _segments[i].transform.position = _lastPositions[i - 1];
             }
+
             for (var i = 0; i < _segments.Length; i++)
             {
                 _lastPositions[i] = _segments[i].transform.position;
@@ -116,21 +174,5 @@ public class WormAgent : Agent
         }
     }
 
-    private bool KeyDown(params KeyCode[] keys)
-    {
-        foreach (var key in keys)
-        {
-            if (Input.GetKeyDown(key))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static bool Approx(Vector3 a, Vector3 b)
-    {
-        return Mathf.Approximately(a.x, b.x) && Mathf.Approximately(a.y, b.y) && Mathf.Approximately(a.z, b.z);
-    }
+    #endregion
 }
