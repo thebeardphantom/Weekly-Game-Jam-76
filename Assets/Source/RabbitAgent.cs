@@ -5,9 +5,6 @@ public class RabbitAgent : Agent
     #region Fields
 
     [SerializeField]
-    private SpriteRenderer _graphics;
-
-    [SerializeField]
     private Vector2 _jumpForce;
 
     private Vector2 _velocity;
@@ -24,9 +21,10 @@ public class RabbitAgent : Agent
 
     #region Methods
 
-    private void Update()
+    protected override void Update()
     {
-        if(IsPlayer)
+        base.Update();
+        if (IsPlayer)
         {
             if (InputManager.Instance.AnyDown("JUMP") && IsGrounded)
             {
@@ -48,7 +46,7 @@ public class RabbitAgent : Agent
 
         if (!Mathf.Approximately(_velocity.x, 0f))
         {
-            _graphics.flipX = Mathf.Sign(_velocity.x) < 0f;
+            Graphics.flipX = Mathf.Sign(_velocity.x) < 0f;
         }
 
         var position = transform.position;

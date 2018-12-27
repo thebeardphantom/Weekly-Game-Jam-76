@@ -6,9 +6,6 @@ public class WormAgent : Agent
     #region Fields
 
     [SerializeField]
-    private SpriteRenderer _headSegment;
-
-    [SerializeField]
     private Sprite _altSprite;
 
     [SerializeField]
@@ -37,12 +34,6 @@ public class WormAgent : Agent
 
     #endregion
 
-    #region Properties
-
-    private Vector2 HeadBottomCenter => transform.position + Vector3.down * _segmentExtents.y;
-
-    #endregion
-
     #region Methods
 
     private static bool Approx(Vector3 a, Vector3 b)
@@ -66,7 +57,6 @@ public class WormAgent : Agent
     protected override void Awake()
     {
         base.Awake();
-
         _updateSpeed = Random.Range(0.05f, 0.1f);
 
         var position = transform.position;
@@ -76,12 +66,12 @@ public class WormAgent : Agent
         transform.position = position;
 
         _segments = new SpriteRenderer[_segmentCount];
-        _segments[0] = _headSegment;
+        _segments[0] = Graphics;
         _lastPositions = new Vector3[_segmentCount];
         _lastPositions[0] = _segments[0].transform.position;
         for (var i = 1; i < _segments.Length; i++)
         {
-            _segments[i] = Instantiate(_headSegment);
+            _segments[i] = Instantiate(Graphics);
             _segments[i].sprite = i % 2 == 0 ? _segments[0].sprite : _altSprite;
             _segments[i].transform.parent = transform;
             _segments[i].transform.position = transform.position + Vector3.right * _offset * i;
@@ -91,27 +81,13 @@ public class WormAgent : Agent
         _segmentExtents = CalcExtents(_segments[0].sprite.vertices);
     }
 
-    private void Update()
+    protected override void Update()
     {
+        base.Update();
         var direction = Vector2.zero;
         if (IsPlayer)
         {
-            if (InputManager.Instance.AnyDown("MOVE_UP"))
-            {
-                direction.y = 1f;
-            }
-            else if (InputManager.Instance.AnyDown("MOVE_DOWN"))
-            {
-                direction.y = -1f;
-            }
-            else if (InputManager.Instance.AnyDown("MOVE_RIGHT"))
-            {
-                direction.x = 1f;
-            }
-            else if (InputManager.Instance.AnyDown("MOVE_LEFT"))
-            {
-                direction.x = -1f;
-            }
+            direction = GetDirectionalInput();
         }
         else if (Time.time >= _nextUpdate)
         {

@@ -16,10 +16,6 @@ public class UIController : MonoBehaviour
     private TextMeshProUGUI _infoPopupText;
 
     [SerializeField]
-    [FormerlySerializedAs("_hintBox")]
-    private RectTransform _infoPopup;
-
-    [SerializeField]
     private UIButton _infoPopupCloseButton;
 
     [SerializeField]

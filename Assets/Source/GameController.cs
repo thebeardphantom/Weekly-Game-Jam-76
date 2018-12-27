@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -33,6 +34,33 @@ public class GameController : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+        EventBus.RegisterListener<AgentDiedEventBusData>(OnAgentDied);
+        StartCoroutine(BeginFirstAgentSearch());
+    }
+
+    private void OnAgentDied(AgentDiedEventBusData data)
+    {
+        ActiveAgent = null;
+    }
+
+    private IEnumerator BeginFirstAgentSearch()
+    {
+        while (ActiveAgent == null)
+        {
+            for (var i = 0; i < Agent.AllAgents.Count; i++)
+            {
+                var agent = Agent.AllAgents[i];
+                if (agent.AgentData.AscensionLevel == 1)
+                {
+                    ActiveAgent = agent;
+                    break;
+                }
+
+                yield return null;
+            }
+
+            yield return null;
+        }
     }
 
     #endregion
