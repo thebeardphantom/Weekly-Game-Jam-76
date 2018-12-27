@@ -33,6 +33,8 @@ public class WormAgent : Agent<WormAgent>
 
     private float _updateSpeed;
 
+    private int _eatenApples;
+
     #endregion
 
     #region Methods
@@ -40,6 +42,14 @@ public class WormAgent : Agent<WormAgent>
     private static bool Approx(Vector3 a, Vector3 b)
     {
         return Mathf.Approximately(a.x, b.x) && Mathf.Approximately(a.y, b.y) && Mathf.Approximately(a.z, b.z);
+    }
+
+    /// <inheritdoc />
+    public override void Kill(Agent source)
+    {
+        _digParticles.transform.SetParent(null, true);
+        Succeeded = _eatenApples >= 3;
+        base.Kill(source);
     }
 
     protected override void Awake()
@@ -73,8 +83,9 @@ public class WormAgent : Agent<WormAgent>
         if (Mathf.Abs(_lastDir.x) > 0f && Mathf.Abs(_lastDir.y) > 0f)
         {
             // Not sure how this happens, dont have time to fix it!
-            _lastDir = Vector2.zero;
+            Kill(this);
         }
+
         var direction = Vector2.zero;
         if (IsPlayer)
         {
@@ -83,7 +94,7 @@ public class WormAgent : Agent<WormAgent>
         else if (Time.time >= _nextUpdate)
         {
             FruitAgent target = null;
-            if(!(GameController.Instance.ActiveAgent is WormAgent))
+            if (!(GameController.Instance.ActiveAgent is WormAgent))
             {
                 var minDist = float.MaxValue;
                 for (var i = 0; i < FruitAgent.All.Count; i++)
@@ -136,6 +147,14 @@ public class WormAgent : Agent<WormAgent>
         MoveInDirection(direction);
     }
 
+    /// <inheritdoc />
+    protected override void OnDisable()
+    {
+        base.OnDisable();
+        var emission = _digParticles.emission;
+        emission.enabled = false;
+    }
+
     private void MoveInDirection(Vector2 direction)
     {
         if (direction.sqrMagnitude > 0f)
@@ -182,22 +201,10 @@ public class WormAgent : Agent<WormAgent>
                 {
                     fruit.Kill(this);
                     _nextUpdate = Time.time + 3f;
-                    if (IsPlayer)
-                    {
-                        Succeeded = true;
-                        Kill(this);
-                    }
+                    _eatenApples++;
                 }
             }
         }
-    }
-
-    /// <inheritdoc />
-    protected override void OnDisable()
-    {
-        base.OnDisable();
-        var emission = _digParticles.emission;
-        emission.enabled = false;
     }
 
     #endregion

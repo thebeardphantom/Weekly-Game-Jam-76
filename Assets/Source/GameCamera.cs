@@ -72,7 +72,7 @@ public class GameCamera : MonoBehaviour
         GetParameters(out var targetPosition, out var lerpTime, out var targetOrthoSize, out var zoomTime, out var lifetimePosition);
 
         _fxMaterial.SetFloat("_Vignette", Mathf.Lerp(0f, 1.5f, lifetimePosition));
-        _fxMaterial.SetFloat("_Desaturation", lifetimePosition * 0.5f);
+        _fxMaterial.SetFloat("_Desaturation", lifetimePosition * 0.75f);
 
         transform.position = Vector3.SmoothDamp(transform.position, targetPosition, ref _positionVelocity, lerpTime);
         _camera.orthographicSize = Mathf.SmoothDamp(_camera.orthographicSize, targetOrthoSize, ref _zoomVelocity, zoomTime);
