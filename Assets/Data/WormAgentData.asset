@@ -67,7 +67,7 @@ MonoBehaviour:
     m_Mode: 0
     m_NumColorKeys: 2
     m_NumAlphaKeys: 2
-  _lifetime: 60
+  _lifetime: 80
   _orthoSize:
     serializedVersion: 2
     m_Curve:
@@ -141,4 +141,5 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   _helpText: "<smallcaps><align=\"center\">Worm</align></smallcaps>\n\nMove one axis
-    at a time. Alternate between moving up and down and left and right.\n\r\n<align=\"center\">\n<u>CONTROLS</smallcaps></u>\n\n$INPUT_MOVE_UP$\n$INPUT_MOVE_DOWN$\r\n$INPUT_MOVE_LEFT$\n$INPUT_MOVE_RIGHT$\n</align>"
+    at a time. Alternate between moving up and down and left and right. Eat at least
+    3 fruit to ascend.\n\r\n<align=\"center\">\n<u>CONTROLS</smallcaps></u>\n\n$INPUT_MOVE_UP$\n$INPUT_MOVE_DOWN$\r\n$INPUT_MOVE_LEFT$\n$INPUT_MOVE_RIGHT$\n</align>"

@@ -80,11 +80,6 @@ public class WormAgent : Agent<WormAgent>
     protected override void Update()
     {
         base.Update();
-        if (Mathf.Abs(_lastDir.x) > 0f && Mathf.Abs(_lastDir.y) > 0f)
-        {
-            // Not sure how this happens, dont have time to fix it!
-            Kill(this);
-        }
 
         var direction = Vector2.zero;
         if (IsPlayer)
@@ -143,7 +138,12 @@ public class WormAgent : Agent<WormAgent>
 
             _nextUpdate = Time.time + _updateSpeed;
         }
-
+        if (Mathf.Abs(direction.x) > 0f && Mathf.Abs(direction.y) > 0f)
+        {
+            // Not sure how this happens, dont have time to fix it!
+            Debug.LogError("INVALID WORM MOVEMENT");
+            Kill(this);
+        }
         MoveInDirection(direction);
     }
 
@@ -151,6 +151,7 @@ public class WormAgent : Agent<WormAgent>
     protected override void OnDisable()
     {
         base.OnDisable();
+        StopAllCoroutines();
         var emission = _digParticles.emission;
         emission.enabled = false;
     }
