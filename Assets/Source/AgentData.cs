@@ -9,6 +9,9 @@ public class AgentData : ScriptableObject
     private int _ascensionLevel;
 
     [SerializeField]
+    private Sprite _previewSprite;
+
+    [SerializeField]
     private AnimationCurve _lifetimeScaleCurve = AnimationCurve.Constant(0f, 1f, 1f);
 
     [SerializeField]
@@ -50,6 +53,8 @@ public class AgentData : ScriptableObject
     public AnimationCurve CameraLerpTime => _cameraLerpTime;
 
     public AnimationCurve CameraZoomTime => _cameraZoomTime;
+
+    public Sprite PreviewSprite => _previewSprite;
 
     #endregion
 }

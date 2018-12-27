@@ -13,6 +13,8 @@ public abstract class Agent : MonoBehaviour
     [FormerlySerializedAs("_graphics")]
     protected SpriteRenderer Graphics;
 
+    protected bool Succeeded;
+
     [SerializeField]
     private Transform _cameraTrackTarget;
 
@@ -62,10 +64,22 @@ public abstract class Agent : MonoBehaviour
         return direction;
     }
 
+    public virtual void Kill(Agent source)
+    {
+        var deadAgentData = new DeadAgentData(
+            GetInstanceID(), 
+            GetType(), 
+            Succeeded, 
+            AgentData.AscensionLevel, 
+            IsPlayer);
+        EventBus.FireEvent(new AgentDiedEventBusData(deadAgentData));
+        Destroy(gameObject);
+    }
+
     protected virtual void Awake()
     {
         SpawnTime = Time.time;
-        StartCoroutine(Kill());
+        StartCoroutine(LifetimeRoutine());
     }
 
     protected virtual void OnEnable()
@@ -84,11 +98,37 @@ public abstract class Agent : MonoBehaviour
         Graphics.color = _data.LifetimeTint.Evaluate(LifetimePosition);
     }
 
-    private IEnumerator Kill()
+    private IEnumerator LifetimeRoutine()
     {
         yield return new WaitForSeconds(_data.Lifetime);
-        EventBus.FireEvent(new AgentDiedEventBusData(this));
-        Destroy(gameObject);
+        Kill(this);
+    }
+
+    #endregion
+}
+
+public abstract class Agent<T> : Agent where T : Agent<T>
+{
+    #region Fields
+
+    public static readonly List<T> All = new List<T>();
+
+    #endregion
+
+    #region Methods
+
+    /// <inheritdoc />
+    protected override void OnEnable()
+    {
+        base.OnEnable();
+        All.Add((T) this);
+    }
+
+    /// <inheritdoc />
+    protected override void OnDisable()
+    {
+        base.OnDisable();
+        All.Remove((T) this);
     }
 
     #endregion

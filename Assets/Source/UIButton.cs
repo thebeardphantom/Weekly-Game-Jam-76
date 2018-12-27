@@ -13,7 +13,7 @@ public class UIButton : Button
 
         public Graphic Graphic;
 
-        public ColorBlock Colors =ColorBlock.defaultColorBlock;
+        public ColorBlock Colors = ColorBlock.defaultColorBlock;
 
         #endregion
 

@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: AppleAgentData
   m_EditorClassIdentifier: 
   _ascensionLevel: 1
+  _previewSprite: {fileID: 21300000, guid: 8e28585f0d72c434eaea96b0819f0530, type: 3}
   _lifetimeScaleCurve:
     serializedVersion: 2
     m_Curve:

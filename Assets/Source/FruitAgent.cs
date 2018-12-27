@@ -1,7 +1,9 @@
 ﻿using UnityEngine;
 
-public class FruitAgent : Agent
+public class FruitAgent : Agent<FruitAgent>
 {
+    #region Fields
+
     [SerializeField]
     private Rigidbody2D _rigidbody;
 
@@ -17,6 +19,27 @@ public class FruitAgent : Agent
 
     private float _aiFallTime;
 
+    #endregion
+
+    #region Properties
+
+    public bool HasFallen { get; private set; }
+
+    #endregion
+
+    #region Methods
+
+    /// <inheritdoc />
+    public override void Kill(Agent source)
+    {
+        if (source.GetType() == typeof(WormAgent))
+        {
+            Succeeded = true;
+        }
+
+        base.Kill(source);
+    }
+
     protected override void Awake()
     {
         base.Awake();
@@ -30,10 +53,15 @@ public class FruitAgent : Agent
     protected override void Update()
     {
         base.Update();
+        if (HasFallen)
+        {
+            return;
+        }
+
         if (IsPlayer)
         {
             var dir = GetDirectionalInput();
-            if(dir.sqrMagnitude > 0f)
+            if (dir.sqrMagnitude > 0f)
             {
                 _wiggles++;
                 _rigidbody.AddForce(dir * _wiggleForce);
@@ -52,6 +80,9 @@ public class FruitAgent : Agent
     private void BreakAnchor()
     {
         _anchor.enabled = false;
+        HasFallen = true;
         Graphics.sortingOrder = 0;
     }
+
+    #endregion
 }

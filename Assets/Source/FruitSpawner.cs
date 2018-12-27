@@ -2,36 +2,36 @@
 using System.Linq;
 using UnityEngine;
 
-public class FruitSpawner : MonoBehaviour
+public class FruitSpawner : MonoBehaviour, IAgentSpawner
 {
+    #region Fields
+
     [SerializeField]
-    private GameObject _fruitPrefab;
+    private Agent _fruitPrefab;
+
+    [SerializeField]
+    private float _minSpawnTime = 2f;
+
+    [SerializeField]
+    private float _maxSpawnTime = 18f;
 
     private Transform[] _spawners;
 
-    private void Awake()
-    {
-        _spawners = GameObject.FindGameObjectsWithTag("Respawn")
-            .Where(t => t.transform.parent == transform)
-            .Select(t => t.transform)
-            .ToArray();
-        StartCoroutine(SpawnerRoutine());
-    }
+    #endregion
 
-    private IEnumerator SpawnerRoutine()
+    #region Properties
+
+    /// <inheritdoc />
+    public Agent Prefab => _fruitPrefab;
+
+    #endregion
+
+    #region Methods
+
+    /// <inheritdoc />
+    public Agent SpawnOne()
     {
         var circleSize = _fruitPrefab.GetComponentInChildren<CircleCollider2D>().radius;
-        yield return new WaitForSeconds(5f);
-        TrySpawnFruit(circleSize);
-        while (true)
-        {
-            yield return new WaitForSeconds(Random.Range(5f, 30f));
-            TrySpawnFruit(circleSize);
-        }
-    }
-
-    private void TrySpawnFruit(float circleSize)
-    {
         Transform spawner = null;
         for (var i = 0; i < 50; i++)
         {
@@ -50,7 +50,31 @@ public class FruitSpawner : MonoBehaviour
         }
         else
         {
-            Instantiate(_fruitPrefab, spawner.position, Quaternion.identity);
+            return Instantiate(_fruitPrefab, spawner.position, Quaternion.identity);
+        }
+
+        return null;
+    }
+
+    private void Awake()
+    {
+        _spawners = GameObject.FindGameObjectsWithTag("Respawn")
+            .Where(t => t.transform.parent == transform)
+            .Select(t => t.transform)
+            .ToArray();
+        StartCoroutine(SpawnerRoutine());
+    }
+
+    private IEnumerator SpawnerRoutine()
+    {
+        yield return new WaitForSeconds(_minSpawnTime);
+        SpawnOne();
+        while (true)
+        {
+            yield return new WaitForSeconds(Random.Range(_minSpawnTime, _maxSpawnTime));
+            SpawnOne();
         }
     }
+
+    #endregion
 }

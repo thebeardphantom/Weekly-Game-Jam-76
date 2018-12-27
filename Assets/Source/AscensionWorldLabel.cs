@@ -27,16 +27,21 @@ public class AscensionWorldLabel : MonoBehaviour
 
     private void OnAgentDied(AgentDiedEventBusData data)
     {
-        if (_agent == null || data.Agent == _agent)
+        if (_agent == null || data.DeadAgent.Id == _agent.GetInstanceID())
         {
             Destroy(gameObject);
         }
     }
 
+    private void OnDestroy()
+    {
+        EventBus.RemoveTarget(this);
+    }
+
     private void Start()
     {
         var renderers = GetComponentsInChildren<Renderer>(true);
-        foreach(var renderer in renderers)
+        foreach (var renderer in renderers)
         {
             renderer.sortingLayerName = "WorldUI";
         }

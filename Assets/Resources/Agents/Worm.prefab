@@ -20,6 +20,7 @@ MonoBehaviour:
   _segmentCount: 10
   _moveSpeed: 0.0625
   _digParticles: {fileID: 127444255444124225}
+  _aiDistance: 5
 --- !u!1 &5188934053144310713
 GameObject:
   m_ObjectHideFlags: 0
@@ -30,7 +31,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7172118029384659038}
   - component: {fileID: 7704524453427090659}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Graphics
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -110,7 +111,7 @@ GameObject:
   - component: {fileID: 8411622155167321316}
   - component: {fileID: 127444255444124225}
   - component: {fileID: 152523169491895967}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: DiggingParticles
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -699,7 +700,7 @@ ParticleSystem:
         m_PostInfinity: 2
         m_RotationOrder: 4
     randomizeRotationDirection: 0
-    maxNumParticles: 100
+    maxNumParticles: 500
     size3D: 0
     rotation3D: 0
     gravityModifier:

@@ -58,7 +58,7 @@ Material:
     m_Floats:
     - _BumpScale: 1
     - _Cutoff: 0.5
-    - _Desaturation: 0.34151608
+    - _Desaturation: 0.058844812
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
     - _GlossMapScale: 1
@@ -72,7 +72,7 @@ Material:
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _UVSec: 0
-    - _Vignette: 1.0245483
+    - _Vignette: 0.17653444
     - _VignettePow: 3
     - _ZWrite: 1
     m_Colors:

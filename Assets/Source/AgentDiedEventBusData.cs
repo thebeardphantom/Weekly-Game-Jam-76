@@ -2,12 +2,12 @@
 {
     #region Fields
 
-    public readonly Agent Agent;
+    public readonly DeadAgentData DeadAgent;
 
     #endregion
 
-    public AgentDiedEventBusData(Agent agent)
+    public AgentDiedEventBusData(DeadAgentData deadAgent)
     {
-        Agent = agent;
+        DeadAgent = deadAgent;
     }
 }

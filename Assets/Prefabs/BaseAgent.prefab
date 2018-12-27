@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3031400482206366326}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: BaseAgent
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -43,7 +43,7 @@ GameObject:
   - component: {fileID: 3563399919876592831}
   - component: {fileID: 8195164997996932385}
   - component: {fileID: 8748105585542984593}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: TMP SubMesh [TextMeshPro/Sprite]
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -146,7 +146,7 @@ GameObject:
   - component: {fileID: 8096838224526042853}
   - component: {fileID: 4978576437703477908}
   - component: {fileID: 1379702620076639765}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: AscensionText
   m_TagString: Untagged
   m_Icon: {fileID: 0}

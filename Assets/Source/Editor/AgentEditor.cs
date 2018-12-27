@@ -12,7 +12,7 @@ public class AgentEditor : Editor
         base.OnInspectorGUI();
         if (Application.isPlaying && GUILayout.Button("Activate"))
         {
-            GameController.Instance.ActiveAgent = target as Agent;
+            GameController.Instance.SetActiveAgent(target as Agent);
         }
     }
 

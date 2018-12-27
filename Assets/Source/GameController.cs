@@ -1,15 +1,17 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameController : MonoBehaviour
 {
     #region Fields
 
-    private readonly Stack<Type> _agentTypeStack = new Stack<Type>();
+    [SerializeField]
+    private GameObject _nest;
 
-    public Agent ActiveAgent;
+    private Camera _mainCamera;
 
     #endregion
 
@@ -17,30 +19,84 @@ public class GameController : MonoBehaviour
 
     public static GameController Instance { get; private set; }
 
+    public Agent ActiveAgent { get; private set; }
+
+    public GameObject Nest => _nest;
+
+    public Camera MainCamera
+    {
+        get
+        {
+            _mainCamera = _mainCamera == null
+                ? Camera.main
+                : _mainCamera;
+            return _mainCamera;
+        }
+    }
+
     #endregion
 
     #region Methods
 
-    public void SetActiveAgent(Agent agent)
+    public void SetActiveAgent(Agent agent, EventBusData sender = null)
     {
-        if (ActiveAgent != null)
-        {
-            _agentTypeStack.Push(ActiveAgent.GetType());
-        }
-
+        var previous = ActiveAgent;
         ActiveAgent = agent;
+        EventBus.FireEvent(new ActiveAgentChangedEventBusData(previous)
+        {
+            Sender = sender
+        });
     }
 
     private void Awake()
     {
         Instance = this;
+        Application.targetFrameRate = 60;
+        QualitySettings.vSyncCount = 1;
         EventBus.RegisterListener<AgentDiedEventBusData>(OnAgentDied);
+        EventBus.RegisterListener<FaderCompleteEventBusData>(OnFaderComplete);
         StartCoroutine(BeginFirstAgentSearch());
+    }
+
+    private void OnFaderComplete(FaderCompleteEventBusData data)
+    {
+        var diedData = data.ExistsUpstream<AgentDiedEventBusData>();
+        if (data.FadingIn && diedData != null)
+        {
+            var succeeded = diedData.DeadAgent.Succeeded;
+            var spawner = Find<IAgentSpawner>(a =>
+            {
+                return succeeded
+                    ? a.Prefab.AgentData.AscensionLevel == diedData.DeadAgent.AscensionLevel + 1
+                    : a.Prefab.GetType() == diedData.DeadAgent.AgentType;
+            });
+            SetActiveAgent(spawner.SpawnOne(), data);
+        }
+    }
+
+    private T Find<T>(Func<T, bool> predicate) where T : class
+    {
+        for (var i = 0; i < SceneManager.sceneCount; i++)
+        {
+            var scene = SceneManager.GetSceneAt(i);
+            var matching = scene.GetRootGameObjects()
+                .SelectMany(s => s.GetComponentsInChildren<T>())
+                .FirstOrDefault(predicate);
+            if (matching != null)
+            {
+                return matching;
+            }
+        }
+
+        return null;
     }
 
     private void OnAgentDied(AgentDiedEventBusData data)
     {
-        ActiveAgent = null;
+        if (data.DeadAgent.IsPlayer)
+        {
+            SetActiveAgent(null, data);
+        }
     }
 
     private IEnumerator BeginFirstAgentSearch()
@@ -52,7 +108,7 @@ public class GameController : MonoBehaviour
                 var agent = Agent.AllAgents[i];
                 if (agent.AgentData.AscensionLevel == 1)
                 {
-                    ActiveAgent = agent;
+                    SetActiveAgent(agent);
                     break;
                 }
 

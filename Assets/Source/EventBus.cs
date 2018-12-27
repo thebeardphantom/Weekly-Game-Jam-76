@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 public static class EventBus
 {
@@ -12,6 +13,16 @@ public static class EventBus
         #region Fields
 
         public readonly OnEventFired<T> Callback;
+
+        #endregion
+
+        #region Properties
+
+        /// <inheritdoc />
+        public object Target => Callback.Target;
+
+        /// <inheritdoc />
+        public MethodBase Method => Callback.Method;
 
         #endregion
 
@@ -33,6 +44,14 @@ public static class EventBus
 
     private interface IRegisteredListener
     {
+        #region Properties
+
+        object Target { get; }
+
+        MethodBase Method { get; }
+
+        #endregion
+
         #region Methods
 
         void FireListener(object data);
@@ -63,9 +82,18 @@ public static class EventBus
         map.RemoveAll(m => ((RegisteredListener<T>) m).Callback == callback);
     }
 
+    public static void RemoveTarget(object target)
+    {
+        foreach (var list in _listenerMap.Values)
+        {
+            list.RemoveAll(l => l.Target == target);
+        }
+    }
+
     public static void FireEvent(EventBusData data)
     {
         var map = GetMap(data.GetType());
+        map.RemoveAll(m => m.Target == null && !m.Method.IsStatic);
         var copy = new IRegisteredListener[map.Count];
         map.CopyTo(copy);
         foreach (var listener in copy)
